@@ -1,0 +1,32 @@
+name: Daily Fortune Push
+
+on:
+  schedule:
+    # 北京时间早上 7:30 推送（UTC 23:30 前一天）
+    - cron: '30 23 * * *'
+  workflow_dispatch:  # 允许在 Actions 页面手动触发测试
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt
+
+      - name: 运行推送脚本
+        run: python daily_push.py
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          WXPUSHER_APP_TOKEN: ${{ secrets.WXPUSHER_APP_TOKEN }}
+          WXPUSHER_UID: ${{ secrets.WXPUSHER_UID }}
+          WXPUSHER_UID_2: ${{ secrets.WXPUSHER_UID_2 }}
