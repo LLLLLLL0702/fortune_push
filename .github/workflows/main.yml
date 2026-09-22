@@ -2,8 +2,8 @@ name: Daily Fortune Push
 
 on:
   schedule:
-    # 北京时间早上 7:30 推送（UTC 23:30 前一天）
-    - cron: '30 23 * * *'
+    # UTC 20:00 = 北京时间 4:00，提前触发，留足排队缓冲
+    - cron: '0 20 * * *'
   workflow_dispatch:  # 允许在 Actions 页面手动触发测试
 
 jobs:
@@ -23,9 +23,15 @@ jobs:
       - name: 安装依赖
         run: pip install -r requirements.txt
 
+      - name: 显示时间
+        run: |
+          echo "UTC 时间: $(date -u)"
+          echo "北京时间: $(TZ=Asia/Shanghai date)"
+
       - name: 运行推送脚本
         run: python daily_push.py
         env:
+          TZ: Asia/Shanghai
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           WXPUSHER_APP_TOKEN: ${{ secrets.WXPUSHER_APP_TOKEN }}
           WXPUSHER_UID: ${{ secrets.WXPUSHER_UID }}
