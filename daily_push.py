@@ -17,6 +17,12 @@ MALE_BAZI = "辛巳 辛丑 癸巳 丙辰"
 MALE_DAYUN = "己亥大运（2028年前）"
 LOCATION = "武汉"
 
+# ⚠️ 大运与流年基础结论（写死，防止AI每天乱改）
+FEMALE_DAYUN_DESC = "戊戌正财大运，稳中求进，忌冒进。"
+MALE_DAYUN_DESC = "己亥七杀大运，压力与机遇并存，宜稳守。"
+FEMALE_LIUNIAN_DESC = "丙午伤官流年，才华显露，防口舌。"
+MALE_LIUNIAN_DESC = "丙午偏财流年，机遇与风险并存。"
+
 BJ = timezone(timedelta(hours=8))
 
 
@@ -85,6 +91,9 @@ def build_meals_female(days: list) -> str:
 
 def build_prompt(today, today_ganzhi, season, days, fe, me, is_together: bool) -> str:
     meals_block = build_meals_female(days)
+    
+    # 提取当前流月（从今日干支中获取月柱）
+    month_ganzhi = today_ganzhi.split()[1] if len(today_ganzhi.split()) >= 2 else "未知"
 
     if is_together:
         interaction_section = """💬【双方交流宜忌】
@@ -100,6 +109,7 @@ def build_prompt(today, today_ganzhi, season, days, fe, me, is_together: bool) -
         context_note = "今天你们不在一起，交流以线上沟通为主。"
 
     prompt = f"""你是一个顶级命理高手，养生大师。请为以下情侣（均在武汉）生成今日精简运势与女方三餐规划。
+你的命理分析必须严谨、准确，禁止模棱两可。
 
 【女方】八字：{FEMALE_BAZI}；当前大运：{FEMALE_DAYUN}。日主乙木，秋季金旺木弱，宜养肝润肺，少辛辣，适当酸味。
 【男方】八字：{MALE_BAZI}；当前大运：{MALE_DAYUN}。日主癸水，秋季金旺水相，宜养肾润燥，少熬夜。
@@ -107,15 +117,23 @@ def build_prompt(today, today_ganzhi, season, days, fe, me, is_together: bool) -
 【今日是否在一起】{"是，周末/节假日在一起" if is_together else "否，工作日各自忙碌，但离得不远"}
 {context_note}
 
+⚠️【命理固定信息，严禁篡改】⚠️
+大运和流年属于长周期信息，我已经为你固定好了结论。你**必须严格引用**以下内容，**绝对禁止**自己改写、发挥或生成变体：
+女方大运：{FEMALE_DAYUN_DESC}
+男方大运：{MALE_DAYUN_DESC}
+女方流年：{FEMALE_LIUNIAN_DESC}
+男方流年：{MALE_LIUNIAN_DESC}
+当前流月：{month_ganzhi}，请围绕此月柱分析，**本月内不要改变对流月的结论**。
+
 请严格按以下格式输出，排版必须整齐。总字数≤1500字，直接给结果，不要任何多余的客套话或分析过程。
 重要：请完全使用纯文本格式，不要使用 Markdown 的 #、*、- 等符号，只需要用 Emoji、换行符和中文标点来排版。每部分之间留一个空行。
 
 运势按由大到小展开，规则如下：
-- 大运、流年：各一句话带过，不超过20字，要结合具体事项，不要模板话
-- 流月：一句话，不超过25字，结合具体事项
-- 流日：重点，2~3句话，不超过80字
-- 流时：只讲今日剩余时辰的吉凶，1句话，没有就省略
-- 能量指数：给出后，用一句话解释依据，不超过15字
+- 大运、流年：直接引用上述固定结论，不得改动一字。
+- 流月：一句话，不超过25字，结合具体事项。
+- 流日：重点，2~3句话，不超过80字。
+- 流时：只讲今日剩余时辰的吉凶，1句话，没有就省略。
+- 能量指数：给出后，用一句话解释依据，不超过15字。
 
 女方今日能量指数固定为 {fe}，男方今日能量指数固定为 {me}，不要改动这两个数字，直接使用。
 
@@ -126,9 +144,9 @@ def build_prompt(today, today_ganzhi, season, days, fe, me, is_together: bool) -
 
 三餐只规划女方，男方不需要三餐规划。
 三餐要求：
-- 每餐给出3个选项，用 / 隔开
-- 结合武汉本地当季食材，优先本地
-- 结合女方乙木日主，秋季养肝润肺，少辛辣，适当酸味
+- 每餐给出3个选项，用 / 隔开。
+- 结合武汉本地当季食材，优先本地。
+- 结合女方乙木日主，秋季养肝润肺，少辛辣，适当酸味。
 
 幸运方位请结合女方喜用神（乙木喜水木）给出，并注明原因，不超过10字。
 适合做的事必须结合今日干支与日主关系，写出具体动作，禁止通用套话。
@@ -141,8 +159,8 @@ def build_prompt(today, today_ganzhi, season, days, fe, me, is_together: bool) -
 
 🌟【女方今日】
 运势：
-大运：XXX
-流年：XXX
+大运：{FEMALE_DAYUN_DESC}
+流年：{FEMALE_LIUNIAN_DESC}
 流月：XXX
 流日：XXX
 流时：XXX
@@ -154,8 +172,8 @@ def build_prompt(today, today_ganzhi, season, days, fe, me, is_together: bool) -
 
 🌟【男方今日】
 运势：
-大运：XXX
-流年：XXX
+大运：{MALE_DAYUN_DESC}
+流年：{MALE_LIUNIAN_DESC}
 流月：XXX
 流日：XXX
 流时：XXX
@@ -185,7 +203,7 @@ def call_deepseek(prompt: str) -> str:
         json={
             "model": "deepseek-chat",
             "messages": [{"role": "user", "content": prompt}],
-            "temperature": 0.8
+            "temperature": 0.3
         },
         timeout=90
     )
