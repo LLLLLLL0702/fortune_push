@@ -82,16 +82,16 @@ def build_meals_female(days: list) -> str:
         label = labels[i] if i < len(labels) else f"{i + 1}天后"
         block += (
             f"\n📅 {label}（{d.strftime('%m-%d')}）\n"
-            f"早：XXX / XXX / XXX\n"
-            f"中：XXX / XXX / XXX\n"
-            f"晚：XXX / XXX / XXX\n"
+            f"早：【菜1】 / 【菜2】 / 【菜3】\n"
+            f"中：【菜1】 / 【菜2】 / 【菜3】\n"
+            f"晚：【菜1】 / 【菜2】 / 【菜3】\n"
         )
     return block
 
 
 def build_prompt(today, today_ganzhi, season, days, fe, me, is_together: bool) -> str:
     meals_block = build_meals_female(days)
-    
+
     # 提取当前流月（从今日干支中获取月柱）
     month_ganzhi = today_ganzhi.split()[1] if len(today_ganzhi.split()) >= 2 else "未知"
 
@@ -144,7 +144,11 @@ def build_prompt(today, today_ganzhi, season, days, fe, me, is_together: bool) -
 
 三餐只规划女方，男方不需要三餐规划。
 三餐要求：
-- 每餐给出3个选项，用 / 隔开。
+- 每餐给出 3 个选项，用 / 隔开；3 个选项之间荤素、食材、做法要有差异，不要三样同质。
+- 每餐尽量覆盖「主食 + 蛋白（荤或豆制品）+ 蔬菜」，体现菜品丰富。
+- 汤羹类只作备选：全天三餐中汤最多出现 2 次，出现时在该菜名后标注「（可选）」；没有汤的餐不要强行凑汤。
+- 4 天菜品尽量不重样，体现丰富多样。
+- 三餐中的【菜1】/【菜2】/【菜3】是占位符，必须替换成具体菜名，严禁原样输出。
 - 结合武汉本地当季食材，优先本地。
 - 结合女方乙木日主，秋季养肝润肺，少辛辣，适当酸味。
 
@@ -186,7 +190,7 @@ def build_prompt(today, today_ganzhi, season, days, fe, me, is_together: bool) -
 {interaction_section}
 
 🍱【女方三餐规划】
-（每餐3个选项，用 / 隔开，结合武汉本地当季，只规划女方，男方无需三餐）
+（每餐3个选项，用 / 隔开；荤素搭配、菜品丰富；汤作备选、全天最多2次并标注「（可选）」；结合武汉本地当季，只规划女方，男方无需三餐）
 
 {meals_block}
 """
